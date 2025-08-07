@@ -31,6 +31,7 @@ This repository contains scripts to deploy Tyk Control Plane and Data Plane on K
 ## 🔧 Scripts Overview
 
 ### 01-deploy-dependencies.sh
+- **Cleans up existing Tyk resources** (namespace, Redis, PostgreSQL)
 - Creates `tyk-cp` namespace
 - Deploys Redis using Bitnami chart
 - Deploys PostgreSQL using Bitnami chart

@@ -4,6 +4,15 @@ NAMESPACE=tyk-cp
 REDIS_BITNAMI_CHART_VERSION=19.0.2
 POSTGRES_BITNAMI_CHART_VERSION=12.12.10
 
+# Clean up any existing resources
+echo "🧹 Cleaning up any existing Tyk resources..."
+kubectl delete namespace $NAMESPACE --ignore-not-found
+helm uninstall tyk-redis -n $NAMESPACE --ignore-not-found 2>/dev/null || true
+helm uninstall tyk-postgres -n $NAMESPACE --ignore-not-found 2>/dev/null || true
+
+# Wait a moment for cleanup to complete
+sleep 3
+
 kubectl create namespace $NAMESPACE
 
 helm upgrade tyk-redis oci://registry-1.docker.io/bitnamicharts/redis -n $NAMESPACE --install --version $REDIS_BITNAMI_CHART_VERSION

@@ -2,7 +2,7 @@
 
 # === Tyk Complete Deployment Script ===
 # This script runs all Tyk deployment scripts in sequence:
-# 1. Deploy dependencies (Redis, PostgreSQL)
+# 1. Deploy dependencies (Redis, PostgreSQL) - includes cleanup of existing resources
 # 2. Deploy control plane
 # 3. Deploy data plane
 
@@ -10,6 +10,8 @@ set -e  # Exit on any error
 
 echo "🚀 Starting Tyk complete deployment..."
 echo "======================================"
+echo "Note: This will clean up any existing Tyk resources first"
+echo ""
 
 # Step 1: Deploy dependencies
 echo ""
