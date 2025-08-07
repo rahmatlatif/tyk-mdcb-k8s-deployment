@@ -17,6 +17,7 @@ Tyk is an API Gateway and Management Platform. This deployment includes:
 - `helm` v3.x installed
 - `jq` installed for JSON processing
 - `envsubst` available (usually pre-installed)
+- **Tyk Dashboard and MDCB licenses** (see [License Configuration](#license-configuration))
 
 ## Quick Start
 
@@ -97,6 +98,36 @@ export ORG_ID="your_org_id_from_bootstrap"
 
 - `values.yaml` - Control Plane configuration with environment variable substitution
 - `values-dp.yaml` - Data Plane configuration using Kubernetes secrets
+
+## License Configuration
+
+**Important**: Before deploying, you must add your Tyk licenses to the configuration files.
+
+### Required Licenses
+- **Tyk Dashboard License** - Required for the Control Plane Dashboard
+- **Tyk MDCB License** - Required for Multi Data Center Bridge functionality
+
+### How to Add Licenses
+
+1. **Edit `values.yaml`** and locate the license sections:
+   ```yaml
+   tyk-dashboard:
+     license: "your-dashboard-license-here"
+   
+   tyk-mdcb:
+     license: "your-mdcb-license-here"
+   ```
+
+2. **Replace the placeholders** with your actual Tyk licenses
+
+3. **Save the file** and proceed with deployment
+
+### Getting Tyk Licenses
+- Visit [Tyk.io](https://tyk.io) to obtain licenses
+- Free trial licenses are available for testing
+- Contact Tyk support for licensing questions
+
+**Note**: The deployment will fail if licenses are not properly configured.
 
 ## Verification
 

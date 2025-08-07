@@ -4,8 +4,7 @@ global:
     #
     # NOTE: If you do not want to store license as a plain text in the file, you can use a Kubernetes secret
     # that stores the dashboard license. Please see `.global.secrets.useSecretName`.
-    # dashboard: "" #(To Change)
-    dashboard: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGxvd2VkX25vZGVzIjoiOTI3OGI4ZGEtMDkwMi00MDgyLTdkM2UtZDgxZmUwZGNiNjBjLGY3N2NmZjEwLWFmNzgtNDNmNy01N2Y2LWQzYmI2ODI5NWIyYixjMTBmOWNkYi00NzU3LTRiZjYtNmZlMC1iZjJjYmFmMzliNjMsN2FjNzU1ZTQtZjBhOC00N2Y3LTQ0NWQtYzBiOWQ4OTc3MTY2LDE4ZWUzODA5LWE2YzAtNDYzNy00NDIyLWQ3ZTA3YmU3YmRkMiw1N2E1MGIwNS1hYTNkLTRhNjYtNTJmYy1iYmEwNDQwMmJkNTEsMTkzMjliZjYtOTFkMC00NDAxLTZjOGYtNTQzYzdkOTA5OGJkLGY4MThkMTY4LTljN2QtNDZlMC01MGI4LWM4MGNmZWNhYWQzMiwzZGI5ZGY5Zi03ZDZiLTRkNGYtNzRiMS1jZDhlNTBiOGU3N2EsZTM5ZTkxODUtMjEwMC00OTVmLTU2ODEtNDhiNzlhNDMzMTRmIiwiZXhwIjoxNzU3MDMwMzk5LCJoaWQiOiJyYWhtYXQiLCJpYXQiOjE3NTQzNjg3NDEsImxpY2Vuc2VfdHlwZSI6ImludGVybmFsIiwib3duZXIiOiI2NmI2M2I0NmUzYzRkNTAwMDE3Mzk0YjIiLCJzY29wZSI6Im11bHRpX3RlYW0scmJhYyxncmFwaCxmZWRlcmF0aW9uLHN0cmVhbXMsdHJhY2siLCJ2IjoiMiJ9.KIE3D2mY3bOnykDB_lRGn1VU5cbjUfKi8fSaAtSN7Srs_6TWSfL1NUU4I8owHIclutbe4i36kGsvJsAOFpeWhDkmOmAhfMnhMSuO0nJqZaBbvnwAX0avqs000g4ydX_t8oGmUpDp_aZwFOnovO3F-GkIbNcVn0deqshf-RD_rMuyOpcRK5uzPE6usbmDDSSpCisccBRqFScpIwO2d1FO6lYUi1t2hJTwyNhWf0KGi3JGv4gaIMnGlL37U4lM23SWOCW4JpvRlEZdrTQet3u8QWJx747cSlRqatoS8kesGPet6r6Fmai8tFm9JR4yjIwaC6CSv9bda0ymBqvn6QDA6Q"
+    dashboard: "your-dashboard-license-here" #(To Change)
 
     # The license key needed by Tyk Operator to work.
     #
@@ -1454,8 +1453,7 @@ tyk-mdcb:
 
     # Tyk MDCB license
     # It is used to set TYK_MDCB_LICENSE
-    # license: "" # (To change)
-    license: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJTS1UiOiJUeWstTURDQi1FTlQiLCJleHAiOjE3NTcwMzAzOTksImhpZCI6InJhaG1hdCIsImxpY2Vuc2VfdHlwZSI6ImludGVybmFsIiwib3duZXIiOiI2NmI2M2I0NmUzYzRkNTAwMDE3Mzk0YjIifQ.X01mp6SyacDfhvvAA2lqJj9d5w5ny_9nw3EgSl4VU05si-mZO2jPwx0pTLc0FSzx7aRWnEapNPSxeTzj24Fr6YFQ6HU-6trPg1bRWAgyUtjK4YsY8KGnLoa5yotQH8NgUzogNshZ-fxosTEtNAu50jY8L9TaHeDccR_0o6jwTQd8qyDwaxPubP8nITjsDn4yoVTXCTWj1AvOOjc4mO8KqZjFn-5BpAu_jzR29tr1LeyqVQVUxNgmCUF1VT16cV_WbWPh2BG0yN_JCHqOo_7CpjMUkBJZqnK_ZzL5q-OzeShPKdiFqSkDS7s0DorXI7BbaKAO13nFIZsORsJAiX9ZWw"
+    license: "your-mdcb-license-here" # (To change)
 
     # The rpc port which worker gateways will connect to.
     # This opens a port on MDCB container and MDCB service targets this port.

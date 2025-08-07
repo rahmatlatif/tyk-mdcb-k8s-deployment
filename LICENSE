@@ -1,0 +1,32 @@
+# Tyk License Placeholder
+
+This repository contains deployment scripts for Tyk Control Plane and Data Plane components.
+
+## Important: Add Your Tyk Licenses
+
+Before using this deployment, you need to add your own Tyk licenses:
+
+### For Tyk Dashboard (Control Plane)
+- Add your Tyk Dashboard license to the `values.yaml` file
+- Look for the `tyk-dashboard.license` section and replace the placeholder with your actual license
+
+### For Tyk MDCB (Multi Data Center Bridge)
+- Add your Tyk MDCB license to the `values.yaml` file  
+- Look for the `tyk-mdcb.license` section and replace the placeholder with your actual license
+
+### License Configuration Example
+```yaml
+tyk-dashboard:
+  license: "your-dashboard-license-here"
+
+tyk-mdcb:
+  license: "your-mdcb-license-here"
+```
+
+## Getting Tyk Licenses
+- Visit [Tyk.io](https://tyk.io) to obtain your licenses
+- Contact Tyk support for licensing questions
+- Free trial licenses are available for testing
+
+## Repository License
+This deployment repository is provided as-is for educational and deployment purposes. 
