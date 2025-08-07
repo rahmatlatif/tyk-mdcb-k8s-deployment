@@ -14,6 +14,12 @@
 # export USER_API_KEY="your_api_key_here"
 # export ORG_ID="your_org_id_here"
 
+# Load environment variables from .env.tyk file if they exist
+if [ -f ".env.tyk" ]; then
+    echo "📁 Loading environment variables from .env.tyk file..."
+    source .env.tyk
+fi
+
 # 1. Set your group ID (edit as needed)
 export GROUP_ID=trainingdp # You can use any name for your group.
 
@@ -43,7 +49,7 @@ else
         echo "A) Set environment variables before running this script:"
         echo "   export USER_API_KEY=\"your_api_key_from_dashboard_bootstrap\""
         echo "   export ORG_ID=\"your_org_id_from_dashboard_bootstrap\""
-        echo "   ./RUN_tyk-dp.sh"
+        echo "   ./03-deploy-data-plane.sh"
         echo ""
         echo "B) Or create the secret manually:"
         echo "   kubectl create secret generic tyk-operator-conf -n tyk-cp \\"

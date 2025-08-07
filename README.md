@@ -1,219 +1,143 @@
-# Tyk Control Plane and Data Plane Deployment
+# Tyk Control Plane Deployment
 
-This repository contains scripts to deploy Tyk Control Plane and Data Plane components on Kubernetes using Helm charts with zero hardcoding of credentials.
+This repository contains scripts to deploy Tyk Control Plane and Data Plane on Kubernetes.
 
-## Overview
+## 🚀 Quick Start
 
-Tyk is an API Gateway and Management Platform. This deployment includes:
-
-- **Control Plane**: Dashboard, Gateway, MDCB (Multi Data Center Bridge), Pump
-- **Data Plane**: Gateway connected to Control Plane via MDCB
-- **Dependencies**: Redis and PostgreSQL
-
-## Prerequisites
-
-- Kubernetes cluster (tested with Docker Desktop)
-- `kubectl` configured and accessible
-- `helm` v3.x installed
-- `jq` installed for JSON processing
-- `envsubst` available (usually pre-installed)
-- **Tyk Dashboard and MDCB licenses** (see [License Configuration](#license-configuration))
-
-## Quick Start
-
-### 1. Deploy Dependencies
-
+### Option 1: Deploy Everything at Once
 ```bash
+./deploy-all.sh
+```
+
+### Option 2: Deploy Step by Step
+```bash
+# Step 1: Deploy dependencies (Redis, PostgreSQL)
 ./01-deploy-dependencies.sh
-```
 
-This script deploys:
-- Redis (Bitnami chart v19.0.2)
-- PostgreSQL (Bitnami chart v12.12.10)
-- Sets environment variables for passwords
-
-### 2. Deploy Control Plane
-
-```bash
+# Step 2: Deploy control plane
 ./02-deploy-control-plane.sh
-```
 
-This script:
-- Deploys Tyk Control Plane using environment variables for passwords
-- Automatically handles fsGroup errors by using `--no-hooks` if needed
-- Provides clear instructions for manual bootstrap if required
-
-### 3. Bootstrap Dashboard (if manual bootstrap required)
-
-If the control plane was installed with `--no-hooks`, you'll need to manually bootstrap:
-
-```bash
-# Port-forward the dashboard
-kubectl port-forward service/dashboard-svc-tyk-cp-tyk-dashboard 3000:3000 -n tyk-cp
-
-# Open browser to http://localhost:3000
-# Follow on-screen instructions to create admin user
-# Note down the API key and Org ID
-```
-
-### 4. Deploy Data Plane
-
-#### Option A: Automatic (if tyk-operator-conf secret exists)
-```bash
+# Step 3: Deploy data plane (after bootstrap)
 ./03-deploy-data-plane.sh
 ```
 
-#### Option B: Manual (if you bootstrapped manually)
-```bash
-# Set environment variables with your bootstrap credentials
-export USER_API_KEY="your_api_key_from_bootstrap"
-export ORG_ID="your_org_id_from_bootstrap"
+## 📋 Prerequisites
 
-# Run the data plane script
-./03-deploy-data-plane.sh
-```
+- Kubernetes cluster (minikube, kind, or cloud provider)
+- kubectl configured
+- Helm 3.x installed
+- jq installed (for JSON parsing)
 
-## Script Details
+## 🔧 Scripts Overview
 
 ### 01-deploy-dependencies.sh
 - Creates `tyk-cp` namespace
-- Deploys Redis with auto-generated password
-- Deploys PostgreSQL with password `trainingdemo`
-- Exports `REDIS_PASSWORD` and `POSTGRES_PASSWORD` environment variables
+- Deploys Redis using Bitnami chart
+- Deploys PostgreSQL using Bitnami chart
+- **Saves environment variables to `.env.tyk` file**
 
 ### 02-deploy-control-plane.sh
-- Uses environment variables for database passwords (zero hardcoding)
-- Automatically detects and handles fsGroup errors
-- Deploys Tyk Control Plane components
-- Provides clear instructions for manual bootstrap if needed
+- **Loads environment variables from `.env.tyk` file**
+- Deploys Tyk Control Plane using Helm
+- Handles fsGroup errors automatically
+- Provides bootstrap instructions
 
 ### 03-deploy-data-plane.sh
-- Supports both automatic and manual credential retrieval
-- Automatically enables hybrid mode for the organization
+- **Loads environment variables from `.env.tyk` file**
 - Creates data plane namespace and secrets
-- Deploys Redis and Tyk Data Plane
-- Connects to Control Plane via MDCB
+- Deploys Tyk Data Plane
+- Configures MDCB connection
 
-## Configuration Files
+### deploy-all.sh
+- Runs all scripts in sequence
+- Provides comprehensive deployment
 
-- `values.yaml` - Control Plane configuration with environment variable substitution
-- `values-dp.yaml` - Data Plane configuration using Kubernetes secrets
+### cleanup.sh
+- Removes all Tyk resources
+- Cleans up environment files
 
-## License Configuration
+## 🔐 Environment Variables
 
-**Important**: Before deploying, you must add your Tyk licenses to the configuration files.
+The scripts now handle environment variables properly:
 
-### Required Licenses
-- **Tyk Dashboard License** - Required for the Control Plane Dashboard
-- **Tyk MDCB License** - Required for Multi Data Center Bridge functionality
+1. **Dependencies script** exports and saves passwords to `.env.tyk`
+2. **Subsequent scripts** automatically load from `.env.tyk`
+3. **Manual fallback** available if `.env.tyk` is missing
 
-### How to Add Licenses
+### Environment Variables Used
+- `REDIS_PASSWORD`: Redis authentication password
+- `POSTGRES_PASSWORD`: PostgreSQL authentication password
+- `NAMESPACE`: Kubernetes namespace (default: tyk-cp)
 
-1. **Edit `values.yaml`** and locate the license sections:
-   ```yaml
-   tyk-dashboard:
-     license: "your-dashboard-license-here"
-   
-   tyk-mdcb:
-     license: "your-mdcb-license-here"
-   ```
+## 🛠️ Troubleshooting
 
-2. **Replace the placeholders** with your actual Tyk licenses
+### Environment Variables Not Saved
+**Problem**: Environment variables from `01-deploy-dependencies.sh` are not available in subsequent scripts.
 
-3. **Save the file** and proceed with deployment
+**Solution**: The scripts now automatically save/load environment variables using `.env.tyk` file.
 
-### Getting Tyk Licenses
-- Visit [Tyk.io](https://tyk.io) to obtain licenses
-- Free trial licenses are available for testing
-- Contact Tyk support for licensing questions
-
-**Note**: The deployment will fail if licenses are not properly configured.
-
-## Verification
-
-### Check Control Plane
+**Manual Fix**: If `.env.tyk` is missing, you can manually set the variables:
 ```bash
-kubectl get pods -n tyk-cp
+export REDIS_PASSWORD=$(kubectl get secret -n tyk-cp tyk-redis -o jsonpath='{.data.redis-password}' | base64 -d)
+export POSTGRES_PASSWORD=$(kubectl get secret -n tyk-cp tyk-postgres-postgresql -o jsonpath='{.data.postgres-password}' | base64 -d)
 ```
 
-### Check Data Plane
+### fsGroup Error
+**Problem**: Installation fails with fsGroup validation error.
+
+**Solution**: The control plane script automatically detects this and installs without hooks.
+
+### Manual Bootstrap Required
+**Problem**: Control plane installed without hooks, requiring manual bootstrap.
+
+**Solution**: Follow the on-screen instructions to manually bootstrap the Dashboard.
+
+## 📊 Verification
+
+### Check Pods
 ```bash
+kubectl get pods -n tyk-cp
 kubectl get pods -n tyk-dp
 ```
 
-### Test Data Plane Connection
+### Access Dashboard
+```bash
+kubectl port-forward service/dashboard-svc-tyk-cp-tyk-dashboard 3000:3000 -n tyk-cp
+# Open http://localhost:3000
+```
+
+### Test Gateway
 ```bash
 kubectl port-forward service/gateway-svc-tyk-data-plane-tyk-gateway 8080:8080 -n tyk-dp
 curl localhost:8080/hello
 ```
 
-Expected response:
-```json
-{
-  "status": "pass",
-  "version": "5.8.1",
-  "description": "Tyk GW",
-  "details": {
-    "redis": {"status": "pass"},
-    "rpc": {"status": "pass"}
-  }
-}
-```
+## 🧹 Cleanup
 
-## Troubleshooting
-
-### fsGroup Errors
-The scripts automatically handle fsGroup validation errors by using `--no-hooks` when detected.
-
-### Manual Bootstrap Required
-If you see "MANUAL BOOTSTRAP REQUIRED", follow the on-screen instructions to bootstrap the Dashboard manually.
-
-### Missing Credentials
-If the data plane script can't find credentials, either:
-1. Set environment variables: `export USER_API_KEY="..." && export ORG_ID="..."`
-2. Create the secret manually: `kubectl create secret generic tyk-operator-conf -n tyk-cp --from-literal=TYK_AUTH="..." --from-literal=TYK_ORG="..."`
-
-### Port Forward Issues
-If port-forward fails, ensure the pods are running:
+To remove all Tyk resources:
 ```bash
-kubectl get pods -n tyk-cp
-kubectl get pods -n tyk-dp
+./cleanup.sh
 ```
 
-## Architecture
-
-```
-┌─────────────────┐    ┌─────────────────┐
-│   Control Plane │    │   Data Plane    │
-│                 │    │                 │
-│ ┌─────────────┐ │    │ ┌─────────────┐ │
-│ │  Dashboard  │ │    │ │   Gateway   │ │
-│ └─────────────┘ │    │ └─────────────┘ │
-│ ┌─────────────┐ │    │ ┌─────────────┐ │
-│ │   Gateway   │ │    │ │    Redis    │ │
-│ └─────────────┘ │    │ └─────────────┘ │
-│ ┌─────────────┐ │    └─────────────────┘
-│ │    MDCB     │ │              │
-│ └─────────────┘ │              │
-│ ┌─────────────┐ │              │
-│ │    Pump     │ │              │
-│ └─────────────┘ │              │
-└─────────────────┘              │
-         │                       │
-         │                       │
-         └─────── MDCB ──────────┘
+Or manually:
+```bash
+kubectl delete namespace tyk-cp tyk-dp
+rm -f .env.tyk values-temp.yaml
 ```
 
-## Security Features
+## 📝 Files
 
-- **Zero Hardcoding**: No passwords or credentials in configuration files
-- **Environment Variables**: Sensitive data passed via environment variables
-- **Kubernetes Secrets**: Credentials stored in Kubernetes secrets
-- **Automatic Cleanup**: Temporary files cleaned up after deployment
+- `01-deploy-dependencies.sh`: Deploy Redis and PostgreSQL
+- `02-deploy-control-plane.sh`: Deploy Tyk Control Plane
+- `03-deploy-data-plane.sh`: Deploy Tyk Data Plane
+- `deploy-all.sh`: Deploy everything in sequence
+- `cleanup.sh`: Remove all resources
+- `values.yaml`: Control plane configuration
+- `values-dp.yaml`: Data plane configuration
+- `.env.tyk`: Environment variables (auto-generated, gitignored)
 
-## Support
+## 🔒 Security Notes
 
-For issues related to:
-- **Tyk Charts**: [Tyk Charts Repository](https://github.com/TykTechnologies/tyk-charts)
-- **Tyk Documentation**: [Tyk Docs](https://tyk.io/docs/)
-- **Kubernetes**: [Kubernetes Documentation](https://kubernetes.io/docs/) 
+- `.env.tyk` contains sensitive passwords and is gitignored
+- Passwords are retrieved from Kubernetes secrets
+- Environment variables are only stored locally 

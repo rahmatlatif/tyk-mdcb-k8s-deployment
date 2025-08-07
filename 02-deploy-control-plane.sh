@@ -5,10 +5,20 @@
 
 NAMESPACE=tyk-cp
 
-# Check if environment variables are set (from RUN_redis_postgres.sh)
+# Load environment variables from .env.tyk file if they exist and are not already set
+if [ -f ".env.tyk" ]; then
+    echo "📁 Loading environment variables from .env.tyk file..."
+    source .env.tyk
+fi
+
+# Check if environment variables are set (from 01-deploy-dependencies.sh)
 if [ -z "$REDIS_PASSWORD" ] || [ -z "$POSTGRES_PASSWORD" ]; then
     echo "❌ ERROR: REDIS_PASSWORD and POSTGRES_PASSWORD environment variables are not set."
-    echo "Please run RUN_redis_postgres.sh first to set up Redis and PostgreSQL with their passwords."
+    echo "Please run 01-deploy-dependencies.sh first to set up Redis and PostgreSQL with their passwords."
+    echo ""
+    echo "Alternatively, you can set them manually:"
+    echo "export REDIS_PASSWORD=\$(kubectl get secret -n $NAMESPACE tyk-redis -o jsonpath='{.data.redis-password}' | base64 -d)"
+    echo "export POSTGRES_PASSWORD=\$(kubectl get secret -n $NAMESPACE tyk-postgres-postgresql -o jsonpath='{.data.postgres-password}' | base64 -d)"
     exit 1
 fi
 
@@ -41,8 +51,8 @@ if [ $INSTALL_EXIT_CODE -eq 0 ]; then
     echo ""
     echo "=== NEXT STEPS ==="
     echo "The control plane has been deployed with automatic bootstrap."
-    echo "You can now proceed with the data plane deployment:"
-    echo "./RUN_tyk-dp.sh"
+            echo "You can now proceed with the data plane deployment:"
+        echo "./03-deploy-data-plane.sh"
 else
     echo "⚠️  Installation failed. Checking for fsGroup error..."
     echo "$INSTALL_OUTPUT"
@@ -77,9 +87,9 @@ else
         echo "   export ORG_ID=\"your_org_id_from_bootstrap\""
         echo ""
         echo "6. Then run the data plane script:"
-        echo "   ./RUN_tyk-dp.sh"
+        echo "   ./03-deploy-data-plane.sh"
         echo ""
-        echo "⚠️  IMPORTANT: Do not proceed with RUN_tyk-dp.sh until bootstrap is complete!"
+        echo "⚠️  IMPORTANT: Do not proceed with ./03-deploy-data-plane.sh until bootstrap is complete!"
     else
         echo "❌ Installation failed with unknown error. Please check the logs above."
         exit 1

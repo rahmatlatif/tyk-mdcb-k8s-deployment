@@ -1,3 +1,5 @@
+#!/bin/bash
+
 NAMESPACE=tyk-cp
 REDIS_BITNAMI_CHART_VERSION=19.0.2
 POSTGRES_BITNAMI_CHART_VERSION=12.12.10
@@ -24,3 +26,13 @@ helm upgrade tyk-postgres oci://registry-1.docker.io/bitnamicharts/postgresql \
 export POSTGRES_PASSWORD=$(kubectl get secret -n $NAMESPACE tyk-postgres-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
 
 echo "POSTGRES_PASSWORD: $POSTGRES_PASSWORD"
+
+# Save environment variables to a file for other scripts to use
+cat > .env.tyk << EOF
+REDIS_PASSWORD=$REDIS_PASSWORD
+POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+NAMESPACE=$NAMESPACE
+EOF
+
+echo "✅ Environment variables saved to .env.tyk"
+echo "You can now run: ./02-deploy-control-plane.sh"

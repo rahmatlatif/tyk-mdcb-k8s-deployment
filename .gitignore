@@ -1,10 +1,12 @@
+# Tyk environment variables (contains sensitive passwords)
+.env.tyk
+
 # Temporary files
 values-temp.yaml
-*.tmp
 
-# Kubernetes secrets and sensitive data
-*.secret
-*.key
+# Kubernetes secrets and configs
+*.kubeconfig
+kubeconfig
 
 # Logs
 *.log
@@ -16,15 +18,4 @@ values-temp.yaml
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Environment files
-.env
-.env.local
-.env.*.local 
+Thumbs.db 
