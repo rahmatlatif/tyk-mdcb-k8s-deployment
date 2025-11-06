@@ -54,12 +54,14 @@ if [ $INSTALL_EXIT_CODE -eq 0 ]; then
             echo "You can now proceed with the data plane deployment:"
         echo "./03-deploy-data-plane.sh"
 else
-    echo "⚠️  Installation failed. Checking for fsGroup error..."
+    echo "⚠️  Installation failed. Checking error type..."
     echo "$INSTALL_OUTPUT"
     
-    # Check if it's a fsGroup error
-    if echo "$INSTALL_OUTPUT" | grep -q "fsGroup.*SecurityContext"; then
-        echo "⚠️  Detected fsGroup error. Installing without hooks..."
+    # Check if it's a fsGroup error, bootstrap/license error, or timeout error
+    if echo "$INSTALL_OUTPUT" | grep -q "fsGroup.*SecurityContext" || \
+       echo "$INSTALL_OUTPUT" | grep -q "bootstrap.*failed\|BackoffLimitExceeded\|failed to parse license" || \
+       echo "$INSTALL_OUTPUT" | grep -q "timed out waiting for the condition\|failed post-install"; then
+        echo "⚠️  Detected error (fsGroup or bootstrap/license issue). Installing without hooks..."
         
         # Uninstall if it exists
         helm uninstall tyk-cp -n $NAMESPACE --no-hooks 2>/dev/null || true

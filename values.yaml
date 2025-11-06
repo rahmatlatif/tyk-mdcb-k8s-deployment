@@ -4,7 +4,7 @@ global:
     #
     # NOTE: If you do not want to store license as a plain text in the file, you can use a Kubernetes secret
     # that stores the dashboard license. Please see `.global.secrets.useSecretName`.
-    dashboard: "your-dashboard-license-here" #(To Change)
+    dashboard: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhbGxvd2VkX25vZGVzIjoiODVlNDc3ZWEtMGIwYi00MmZhLTRiZjUtMmFkMDE1MTEyOWFhLGI5ZTI1MmYyLTIyOTgtNDc2NS00NmI2LWRjODgyYTU0YzQ3MyxkYWYwYmE0OC03OTUxLTRhMmEtNzUyMS05OWIzYzc2OGIxNzYsMmFkMTdjZWQtNDE1Ny00ODYzLTZkZDItZWZlMzRmZDRkZTUwLGJkOTQ0M2M1LTNjMzItNDNhOS01NTcxLTAyYmFmNDA4NzM1YSw0ZGJkN2ZlYy1mYTA5LTQ0ZjEtN2ZiNy1jOGFjYzY1N2NiOWQsMTgwYjU4MjEtMDIwZi00NjBjLTcwMTUtMTVmNWYzZDcyYTAwLGZlNGI3NTZjLTliNDItNGQ5MC00ZjNkLWViZTViYzA2MzhhNSwyYWEzNDJlNC01YTMxLTQ0YmMtNDExZC00YjNkZDY0OGEyMWUsNjNmOGM3ZDQtZTY1Ni00MGVjLTYwOTgtNGM1NWZiY2RjYjNmIiwiZXhwIjoxNzY1MDY1NTk5LCJoaWQiOiJyYWhtYXQiLCJpYXQiOjE3NjI0MTYzNzksImxpY2Vuc2VfdHlwZSI6ImludGVybmFsIiwib3duZXIiOiI2NmI2M2I0NmUzYzRkNTAwMDE3Mzk0YjIiLCJzY29wZSI6Im11bHRpX3RlYW0scmJhYyxncmFwaCxmZWRlcmF0aW9uLHN0cmVhbXMsdHJhY2siLCJ2IjoiMiJ9.adM-pL-fQOEUIuJoAkt_1RONx5npw-qImRqk27mR4MD4WN2AvtSN7AdHFwNr_kWERM2gAlhvLm4YC51ZSfQbqVgy_VmIQJ1oqTm5CQ30fte8mfCzjYO7hhOWSRdIV5miYLlwKNIrWkVPM3mDlI-iasIuEc29Jp4JwSkKVJmmyme0wMNCRc0Fa4iBinP4YV42DELWsqkB7l9egTdKik_7RfMbUaKn6fREo-GjTBMZHkJ-DrklyyvrN0JSpS0UDlYCuKxxAZW38xjFosSy2k_Rpk4QKja_M_wWgZML5MckV4A_PvGQrSMeWFnIbcY_BMXXgH4_tAAnF8IZEwoyA7OBAg" #(To Change)
 
     # The license key needed by Tyk Operator to work.
     #
@@ -213,13 +213,13 @@ global:
     # user corresponds to the user of postgres
     user: postgres
     # password corresponds to the password of the given postgres user in selected database
-    password: ${POSTGRES_PASSWORD}
+    password: trainingdemo
     # database corresponds to the database to be used in postgres
     database: tyk_analytics
     # sslmode corresponds to if postgres runs in sslmode (https)
     sslmode: disable
 
-    # Connection string can also be set using a secret. Provide the name of the secret and key below.
+    # Prefer using a secret so Dashboard always matches the chart-generated password
     # connectionStringSecret:
     #   name: tyk-postgres-postgresql
     #   keyName: postgres-password
@@ -1453,7 +1453,7 @@ tyk-mdcb:
 
     # Tyk MDCB license
     # It is used to set TYK_MDCB_LICENSE
-    license: "your-mdcb-license-here" # (To change)
+    license: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJTS1UiOiJUeWstTURDQi1FTlQiLCJleHAiOjE3NjUwNjU1OTksImhpZCI6InJhaG1hdCIsImxpY2Vuc2VfdHlwZSI6ImludGVybmFsIiwib3duZXIiOiI2NmI2M2I0NmUzYzRkNTAwMDE3Mzk0YjIifQ.dkRSUJKxT5YygjrPtLNU3H2GelrSh5XPKeREFZtMWxsH2Ief1UPQsoxw-ZkWvE4sNuajEXGid8a98QxL-fqJvmL70lUy5a2O4G9Zj45vf6QKTIFZ3iqb03_DVOeOzRArooGbhJpEjEAj83CO6EJapqXx6xzRfM7g_CuNFwxb2ci18oEjs2YaU3adsVbdPWmUoGY43N73WY0p5yYFdgjl0J5KVpIdNxukEVUqBHgyvxpg5FhkeIFV-PAbWvYeKV5AFCEX5pXBbR2esEcmMvqNIkt6MO2AAo9YJZWeb5NioL5D0SYWgSUK6btDzH_Soy9IUWZ0GcrNsAjZfhiJOF_gAg" # (To change)
 
     # The rpc port which worker gateways will connect to.
     # This opens a port on MDCB container and MDCB service targets this port.

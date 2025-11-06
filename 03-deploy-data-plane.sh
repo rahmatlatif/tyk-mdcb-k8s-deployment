@@ -123,7 +123,17 @@ REDIS_BITNAMI_CHART_VERSION=19.0.2
 
 # 7.1 Deploy Redis using Helm
 echo "Deploying Redis for data plane..."
-helm upgrade tyk-redis oci://registry-1.docker.io/bitnamicharts/redis -n $NAMESPACE --install --version $REDIS_BITNAMI_CHART_VERSION
+# Use image overrides to avoid unavailable versioned Bitnami images
+helm upgrade tyk-redis oci://registry-1.docker.io/bitnamicharts/redis \
+  -n $NAMESPACE \
+  --install \
+  --version $REDIS_BITNAMI_CHART_VERSION \
+  --set image.registry=docker.io \
+  --set image.repository=bitnami/redis \
+  --set image.tag=latest \
+  --set metrics.image.registry=docker.io \
+  --set metrics.image.repository=bitnami/redis-exporter \
+  --set metrics.image.tag=latest
 
 # 7.2 Wait for Redis to be ready
 echo "Waiting for Redis to be ready..."

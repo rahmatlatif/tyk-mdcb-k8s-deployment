@@ -25,9 +25,52 @@ echo "🎛️  Step 2: Deploying Tyk Control Plane..."
 echo "-------------------------------------------"
 ./02-deploy-control-plane.sh
 
-# Step 3: Deploy data plane
+# Step 3: Port-forward the Dashboard (in background)
 echo ""
-echo "🌐 Step 3: Deploying Tyk Data Plane..."
+echo "🛰️  Step 3: Port-forwarding Tyk Dashboard to http://localhost:3000 ..."
+echo "--------------------------------------"
+
+# Wait for Dashboard deployment to be available
+kubectl wait --for=condition=available deploy/dashboard-tyk-cp-tyk-dashboard -n tyk-cp --timeout=180s || true
+
+# Start port-forward in background and record PID
+kubectl port-forward -n tyk-cp service/dashboard-svc-tyk-cp-tyk-dashboard 3000:3000 >/dev/null 2>&1 &
+PF_DASHBOARD_PID=$!
+echo $PF_DASHBOARD_PID > .pf-dashboard.pid
+echo "🔌 Dashboard is being forwarded on http://localhost:3000 (PID: $PF_DASHBOARD_PID)"
+
+# Step 4: Retrieve org/user details and ensure tyk-operator-conf secret exists
+echo ""
+echo "🧩 Step 4: Retrieving org/user details from Dashboard and updating tyk-operator-conf..."
+echo "--------------------------------------"
+
+# Wait for Dashboard API to respond
+ATTEMPTS=0
+until curl -s -H "admin-auth: 12345" http://localhost:3000/admin/organisations >/dev/null 2>&1 || [ $ATTEMPTS -ge 30 ]; do
+  ATTEMPTS=$((ATTEMPTS+1))
+  sleep 2
+done
+
+if ! curl -s -H "admin-auth: 12345" http://localhost:3000/admin/organisations >/dev/null 2>&1; then
+  echo "⚠️  Dashboard API not reachable yet. Skipping secret creation. You can rerun this step manually later."
+else
+  ORG_ID=$(curl -s -H "admin-auth: 12345" http://localhost:3000/admin/organisations | jq -r '.organisations[0].id // empty')
+  USER_API_KEY=$(curl -s -H "admin-auth: 12345" http://localhost:3000/admin/users | jq -r '.users[0].api_key // empty')
+
+  if [ -z "$ORG_ID" ] || [ -z "$USER_API_KEY" ]; then
+    echo "⚠️  Could not retrieve ORG_ID or USER_API_KEY from Dashboard. Skipping secret creation."
+  else
+    kubectl create secret generic tyk-operator-conf -n tyk-cp \
+      --from-literal=TYK_AUTH="$USER_API_KEY" \
+      --from-literal=TYK_ORG="$ORG_ID" \
+      --dry-run=client -o yaml | kubectl apply -f -
+    echo "🔐 Secret tyk-operator-conf ensured in namespace tyk-cp."
+  fi
+fi
+
+# Step 5: Deploy data plane
+echo ""
+echo "🌐 Step 5: Deploying Tyk Data Plane..."
 echo "--------------------------------------"
 ./03-deploy-data-plane.sh
 
