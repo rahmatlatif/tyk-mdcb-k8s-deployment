@@ -36,9 +36,35 @@ kubectl port-forward -n tyk-cp service/dashboard-svc-tyk-cp-tyk-dashboard 3000:3
 ./03-deploy-data-plane.sh
 
 # Step 5: Deploy additional data planes (optional)
+
+# Option A: Deploy additional data planes for the same org
 ./04-deploy-additional-data-plane.sh  # Creates tyk-dp-2 on port 8081
 ./04-deploy-additional-data-plane.sh  # Creates tyk-dp-3 on port 8082
-# ... repeat as needed
+
+# Option B: Deploy new organizations with dedicated data planes (multi-tenant)
+./05-deploy-org-with-data-plane.sh "Acme Corp"                    # Uses defaults
+./05-deploy-org-with-data-plane.sh "Tech Inc" admin@tech.com     # Custom email
+./05-deploy-org-with-data-plane.sh "BigCo" admin@bigco.com pass123  # Custom email and password
+```
+
+## 🏢 Multi-Tenant Deployment
+
+Deploy multiple organizations, each with their own isolated data plane:
+
+```bash
+# Ensure Dashboard is accessible
+kubectl port-forward -n tyk-cp service/dashboard-svc-tyk-cp-tyk-dashboard 3000:3000
+
+# Create organizations with dedicated data planes
+./05-deploy-org-with-data-plane.sh "Acme Corp" admin@acme.com secure123
+./05-deploy-org-with-data-plane.sh "Tech Startup" admin@techstartup.io password456
+./05-deploy-org-with-data-plane.sh "Enterprise Co" admin@enterprise.com complex789
+
+# Each org gets:
+# - Unique namespace: tyk-dp-acme-corp, tyk-dp-tech-startup, tyk-dp-enterprise-co
+# - Unique port: 8081, 8082, 8083
+# - Isolated Redis and Gateway
+# - Separate credentials stored in secrets
 ```
 
 ## 📋 Prerequisites
@@ -79,7 +105,7 @@ kubectl port-forward -n tyk-cp service/dashboard-svc-tyk-cp-tyk-dashboard 3000:3
 - Configures MDCB connection to control plane
 
 ### 04-deploy-additional-data-plane.sh
-- **NEW**: Deploy additional data planes with auto-incremented namespaces/ports
+- Deploy additional data planes with auto-incremented namespaces/ports
 - Detects existing data planes and creates next in sequence
 - Auto-increments:
   - Namespace: `tyk-dp-2`, `tyk-dp-3`, etc.
@@ -87,6 +113,23 @@ kubectl port-forward -n tyk-cp service/dashboard-svc-tyk-cp-tyk-dashboard 3000:3
   - Group ID: `dp-2`, `dp-3`, etc.
 - Deploys dedicated Redis + Gateway for each data plane
 - Generates unique `values-dp-N.yaml` for each deployment
+- All data planes share the same org/user credentials
+
+### 05-deploy-org-with-data-plane.sh
+- **NEW**: Multi-tenant deployment - create new org with dedicated data plane
+- Creates a new organization via Dashboard API
+- Creates admin user for the organization
+- Enables hybrid mode for the organization
+- Deploys dedicated data plane tied to that specific org
+- Each org is isolated with its own:
+  - Organization ID
+  - User API key
+  - Namespace (`tyk-dp-<org-name>`)
+  - Redis instance
+  - Gateway deployment
+  - Port (auto-incremented)
+- Stores org credentials in Kubernetes secrets
+- Generates org-specific `values-dp-<org-name>.yaml`
 
 ### deploy-all.sh
 - **Automated end-to-end deployment**
@@ -237,6 +280,25 @@ curl localhost:8081/hello
 # Third data plane (tyk-dp-3)
 kubectl port-forward service/gateway-svc-tyk-data-plane-3-tyk-gateway 8082:8082 -n tyk-dp-3
 curl localhost:8082/hello
+
+# Multi-tenant org-specific data planes
+kubectl port-forward service/gateway-svc-tyk-dp-acme-corp-tyk-gateway 8081:8081 -n tyk-dp-acme-corp
+curl localhost:8081/hello
+
+kubectl port-forward service/gateway-svc-tyk-dp-tech-startup-tyk-gateway 8082:8082 -n tyk-dp-tech-startup
+curl localhost:8082/hello
+```
+
+### View Organizations and Credentials
+```bash
+# List all organizations
+curl -s -H "admin-auth: 12345" http://localhost:3000/admin/organisations | jq '.organisations[] | {name: .owner_name, id: .id, hybrid: .hybrid_enabled}'
+
+# View specific org's credentials (stored in secret)
+kubectl get secret tyk-org-details -n tyk-dp-acme-corp -o jsonpath='{.data}' | jq -r 'to_entries | .[] | "\(.key): \(.value | @base64d)"'
+
+# List all org-specific data plane namespaces
+kubectl get namespaces | grep tyk-dp
 ```
 
 ### Expected Gateway Response
@@ -289,7 +351,8 @@ rm -f .env.tyk values-temp.yaml values-dp-*.yaml .pf-dashboard.pid
 - `01-deploy-dependencies.sh`: Deploy Redis and PostgreSQL (with latest Bitnami images)
 - `02-deploy-control-plane.sh`: Deploy Tyk Control Plane (Dashboard, MDCB, Gateway, Pump)
 - `03-deploy-data-plane.sh`: Deploy first data plane
-- `04-deploy-additional-data-plane.sh`: Deploy additional data planes (auto-increments)
+- `04-deploy-additional-data-plane.sh`: Deploy additional data planes for the same org (auto-increments)
+- `05-deploy-org-with-data-plane.sh`: Create new organization with dedicated data plane (multi-tenant)
 - `deploy-all.sh`: Automated end-to-end deployment
 - `cleanup.sh`: Remove all Tyk resources
 
@@ -297,6 +360,7 @@ rm -f .env.tyk values-temp.yaml values-dp-*.yaml .pf-dashboard.pid
 - `values.yaml`: Control plane Helm values
 - `values-dp.yaml`: Data plane template Helm values
 - `values-dp-N.yaml`: Auto-generated values for additional data planes (N = 2, 3, ...)
+- `values-dp-<org-name>.yaml`: Auto-generated values for org-specific data planes (e.g., `values-dp-acme-corp.yaml`)
 
 ### Auto-Generated Files (gitignored)
 - `.env.tyk`: Environment variables (Redis/PostgreSQL passwords)
